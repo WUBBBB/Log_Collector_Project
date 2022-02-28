@@ -1,0 +1,2 @@
+# Log_Collector_Project
+从零开始为视频网站实现日志搜集项目
