@@ -10,6 +10,7 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/go-ini/ini"
 	"github.com/sirupsen/logrus"
+	"main.go/etcd"
 )
 
 // 日志收集的客户端
@@ -24,6 +25,7 @@ import (
 type Config struct {
 	KafkaConfig   `ini:"kafka"`
 	CollectConfig `ini:"collect"`
+	EtcdConfig    `ini:"etcd"`
 }
 
 type KafkaConfig struct {
@@ -34,6 +36,11 @@ type KafkaConfig struct {
 
 type CollectConfig struct {
 	LogfilePath string `ini:"logfile_path"`
+}
+
+type EtcdConfig struct {
+	Address    string `ini:"address"`
+	CollectKey string `ini:"collect_key"`
 }
 
 func run() (err error) {
@@ -77,8 +84,22 @@ func main() {
 		return
 	}
 	logrus.Info("init kafka success!")
+
+	// 初始化etcd连接
+	err = etcd.Init([]string{configObj.EtcdConfig.Address})
+	if err != nil {
+		logrus.Errorf("init etcd failed, err:%v", err)
+		return
+	}
+	// 从etcd中拉取要搜集日志的配置
+	allConf, err := etcd.GetConf(configObj.EtcdConfig.CollectKey)
+	if err != nil {
+		logrus.Errorf("get conf from etcd failed, err:%v", err)
+		return
+	}
+	fmt.Println(allConf)
 	// 2.	根据配置中的日志路径使用tail去收集日志
-	err = tailfile.Init(configObj.CollectConfig.LogfilePath)
+	err = tailfile.Init(allConf) // 把从etcd中获取的配置项加载到Init中
 	if err != nil {
 		logrus.Error("init tailfile failed, err: ", err)
 		return
