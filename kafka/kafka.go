@@ -12,7 +12,7 @@ import (
 
 var (
 	client  sarama.SyncProducer
-	MsgChan chan *sarama.ProducerMessage
+	msgChan chan *sarama.ProducerMessage
 )
 
 func Init(address []string, chanSize int64) error {
@@ -30,18 +30,18 @@ func Init(address []string, chanSize int64) error {
 		back := fmt.Errorf("kafka:producer closed, err:", err)
 		return back
 	}
-	// 初始化MsgChan
-	MsgChan = make(chan *sarama.ProducerMessage, chanSize)
-	// 起一个后台的goroutine从msgchan中读数据
+	// 3. 初始化msgChan
+	msgChan = make(chan *sarama.ProducerMessage, chanSize)
+	// 4. 起一个后台的goroutine从msgchan中读数据发送给kafka
 	go sendMsg()
 	return nil
 }
 
-// 从MsgChan中读取msg，发送给kafka
+// 从msgChan中读取msg，发送给kafka
 func sendMsg() {
 	for {
 		select {
-		case msg := <-MsgChan:
+		case msg := <-msgChan:
 			pid, offset, err := client.SendMessage(msg)
 			if err != nil {
 				logrus.Warning("send msg failed, err:", err)
@@ -50,4 +50,8 @@ func sendMsg() {
 			logrus.Infof("send msg to kafka success. pid:%v offset:%v", pid, offset)
 		}
 	}
+}
+
+func ToMsgChan(msg *sarama.ProducerMessage) {
+	msgChan <- msg
 }

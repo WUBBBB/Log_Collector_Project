@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	"kafka"
 	"strings"
-	"tailfile"
 	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/go-ini/ini"
 	"github.com/sirupsen/logrus"
 	"main.go/etcd"
+	"main.go/kafka"
+	"main.go/tailfile"
 )
 
 // 日志收集的客户端
