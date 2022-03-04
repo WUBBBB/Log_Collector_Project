@@ -2,10 +2,7 @@ package main
 
 import (
 	"fmt"
-	"strings"
-	"time"
 
-	"github.com/Shopify/sarama"
 	"github.com/go-ini/ini"
 	"github.com/sirupsen/logrus"
 	"main.go/etcd"
@@ -28,14 +25,17 @@ type Config struct {
 	EtcdConfig    `ini:"etcd"`
 }
 
+// `[{"path":"F:/LogCollectorProject/err_logs/video_err.log","topic":"video_log"}
+// ,{"path":"F:/LogCollectorProject/err_logs/sign_in_err.log","topic":"sign_in_log"}]`
+
 type KafkaConfig struct {
-	Address  string `ini:"address"`
-	Topci    string `ini:"topic"`
-	ChanSize int64  `ini:"chan_size"`
+	Address string `ini:"address"`
+	// Topci    string `ini:"topic"`
+	ChanSize int64 `ini:"chan_size"`
 }
 
 type CollectConfig struct {
-	LogfilePath string `ini:"logfile_path"`
+	// LogfilePath string `ini:"logfile_path"`
 }
 
 type EtcdConfig struct {
@@ -43,34 +43,13 @@ type EtcdConfig struct {
 	CollectKey string `ini:"collect_key"`
 }
 
-func run() (err error) {
-	// TailObj --> log --> Client --> kafka
-	for {
-		// 循环读数据
-		line, ok := <-tailfile.TailObj.Lines //chan tail.Line
-		if !ok {
-			logrus.Warn("tail file close reopen, filename:%s\n",
-				tailfile.TailObj.Filename)
-			time.Sleep(time.Second) // 读取出错等一秒
-			continue
-		}
-		//如果是空行就跳过
-		if len(strings.Trim(line.Text, "\r")) == 0 {
-			continue
-		}
-		// 利用通道将同步的代码改为异步的
-		// 把读出来的一行日志包装成kafka里面的msg类型， 丢到通道中
-		msg := &sarama.ProducerMessage{}
-		msg.Topic = "video_log"
-		msg.Value = sarama.StringEncoder(line.Text)
-		// 丢到通道中
-		kafka.ToMsgChan(msg)
-	}
+func run() {
+	select {}
 }
 
 func main() {
 	var configObj = new(Config)
-	// 0.	读配置文件 `go-ini`
+	// 0.	读配置文件 `go-ini`		获得连接端口、初始化设置等信息
 	err := ini.MapTo(configObj, "./config/config.ini")
 	if err != nil {
 		logrus.Error("load config failed, err: ", err)
@@ -98,6 +77,8 @@ func main() {
 		return
 	}
 	fmt.Println(allConf)
+	// 监控 configObj.EtcdConfig.CollectKey 对应值的变化
+	go etcd.WatchConf(configObj.EtcdConfig.CollectKey)
 	// 2.	根据配置中的日志路径使用tail去收集日志
 	err = tailfile.Init(allConf) // 把从etcd中获取的配置项加载到Init中
 	if err != nil {
@@ -105,10 +86,5 @@ func main() {
 		return
 	}
 	logrus.Info("init tailfile success!")
-	// 3.	把日志通过Sarama发往kafka
-	err = run()
-	if err != nil {
-		logrus.Error("run failed, err :", err)
-		return
-	}
+	run()
 }
