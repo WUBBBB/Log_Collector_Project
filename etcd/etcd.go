@@ -60,7 +60,7 @@ func GetConf(key string) (collectEntryList []common.CollectEntry, err error) {
 		return
 	}
 	if len(resp.Kvs) == 0 {
-		logrus.Warningf("get len:0 conf from etcd by key:%s", key)
+		logrus.Warningf("get len:0 conf from etcd by key:%s, check that if your ip is similar with the set", key)
 		return
 	}
 	ret := resp.Kvs[0]
@@ -82,7 +82,7 @@ func WatchConf(key string) {
 			for _, evt := range wresp.Events {
 				fmt.Printf("type:%s key:%s value:%s\n", evt.Type, evt.Kv.Key, evt.Kv.Value)
 				var newConf []common.CollectEntry
-				// 原代码为：if evt.Type == clientv3.EventTypeDelete，该函数已经被取消，只能另找方法表示DELETE时间
+				// 原代码为：if evt.Type == clientv3.EventTypeDelete，该函数已经被取消，只能另找方法表示DELETE事件
 				// 查阅文档，找到对应结构体，delete对应的int32数为1，更改代码后如下：
 				// const ( PUT    Event_EventType = 0 DELETE Event_EventType = 1 EXPIRE Event_EventType = 2 )
 				if evt.Type == 1 {

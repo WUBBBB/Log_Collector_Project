@@ -1,30 +1,32 @@
 0
-54
+56
 __consumer_offsets 22 0
-sing_in_log 0 0
+sing_in_log 0 2
 __consumer_offsets 30 0
 __consumer_offsets 8 0
 __consumer_offsets 21 0
 __consumer_offsets 4 0
 __consumer_offsets 27 0
 __consumer_offsets 7 0
+user_normal_log 0 0
 __consumer_offsets 9 0
 __consumer_offsets 46 0
+web_log 0 0
 __consumer_offsets 25 0
-video_log 0 7
+video_log 0 8
 __consumer_offsets 35 0
 __consumer_offsets 41 0
 __consumer_offsets 33 0
 __consumer_offsets 23 0
 __consumer_offsets 49 0
-vide_normal_log 0 0
+vide_normal_log 0 1
 __consumer_offsets 47 0
 __consumer_offsets 16 0
 __consumer_offsets 28 0
 __consumer_offsets 31 0
 __consumer_offsets 36 0
 __consumer_offsets 42 0
-sign_in_log 0 0
+sign_in_log 0 2
 __consumer_offsets 3 0
 __consumer_offsets 18 0
 __consumer_offsets 37 0
